@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import 'openzeppelin-solidity/contracts/token/ERC721/ERC721.sol';
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
 contract StarNotary is ERC721 {
 
@@ -9,7 +9,12 @@ contract StarNotary is ERC721 {
     }
 
 //  Add a name and a symbol for your starNotary tokens
-
+    function name() public pure returns (string){
+        return "StarNotaryToken";
+    }
+    function symbol() public pure returns(string) {
+        return "SNT";
+    }
 //
 
     mapping(uint256 => Star) public tokenIdToStarInfo;
@@ -24,7 +29,9 @@ contract StarNotary is ERC721 {
     }
 
 // Add a function lookUptokenIdToStarInfo, that looks up the stars using the Token ID, and then returns the name of the star.
-
+    function lookUptokenIdToStarInfo(uint256 _tokenId) public view returns (string) {
+        return tokenIdToStarInfo[_tokenId].name;
+    }
 //
 
     function putStarUpForSale(uint256 _tokenId, uint256 _price) public {
@@ -49,15 +56,32 @@ contract StarNotary is ERC721 {
             msg.sender.transfer(msg.value - starCost);
         }
         starsForSale[_tokenId] = 0;
-      }
+    }
 
 // Add a function called exchangeStars, so 2 users can exchange their star tokens...
 //Do not worry about the price, just write code to exchange stars between users.
+    function exchangeStars(address _to, uint256 _tokenId1, uint256 _tokenId2) public {
+        address _from = msg.sender;
+        require(_from == ownerOf(_tokenId1));
+        require(_to == ownerOf(_tokenId2));
+        require(_from != _to);
 
+        _removeTokenFrom(_from, _tokenId1);
+        _removeTokenFrom(_to, _tokenId2);
+        _addTokenTo(_to, _tokenId1);
+        _addTokenTo(_from, _tokenId2);
+    }
 //
 
 // Write a function to Transfer a Star. The function should transfer a star from the address of the caller.
 // The function should accept 2 arguments, the address to transfer the star to, and the token ID of the star.
 //
-
+    function transferStar(address _to, uint256 _tokenId) public {
+        address _from = msg.sender;
+        require(_from == ownerOf(_tokenId));
+        require(_from != _to);
+        
+        _removeTokenFrom(_from, _tokenId);
+        _addTokenTo(_to, _tokenId);
+    }
 }

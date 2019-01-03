@@ -1,16 +1,13 @@
 //import 'babel-polyfill';
-const StarNotary = artifacts.require('./starNotary.sol')
-
-let instance;
-let accounts;
+const StarNotary = artifacts.require('./StarNotary.sol')
 
 contract('StarNotary', async (accs) => {
-    accounts = accs;
-    instance = await StarNotary.deployed();
-  });
+  const accounts = accs;
+  //console.log('Accounts: ', accounts)
 
   it('can Create a Star', async() => {
     let tokenId = 1;
+    const instance = await StarNotary.deployed();
     await instance.createStar('Awesome Star!', tokenId, {from: accounts[0]})
     assert.equal(await instance.tokenIdToStarInfo.call(tokenId), 'Awesome Star!')
   });
@@ -62,6 +59,35 @@ contract('StarNotary', async (accs) => {
     const balanceAfterUser2BuysStar = web3.eth.getBalance(user2)
     assert.equal(balanceOfUser2BeforeTransaction.sub(balanceAfterUser2BuysStar), starPrice);
   });
+
+  it('should add name and symbol', async() => {
+    const instance = await StarNotary.deployed();
+    assert.equal(await instance.name.call(), 'StarNotaryToken');
+    assert.equal(await instance.symbol.call(), 'SNT');
+  });
+
+  it('can exchange tokens', async() => {
+    const instance = await StarNotary.deployed();
+    const user1 = accounts[0];
+    const user2 = accounts[6];
+    const tokenId1 = 1;
+    const tokenId2 = 2;
+    await instance.createStar('Awesome Star 2!', tokenId2, { from: user2 })
+    await instance.exchangeStars(user2, tokenId1, tokenId2, { from: user1 });
+    assert.equal(await instance.ownerOf.call(tokenId1), user2);
+    assert.equal(await instance.ownerOf.call(tokenId2), user1);
+  });
+
+  it('can transfer stars', async() => {
+    const instance = await StarNotary.deployed();
+    const user1 = accounts[0];
+    const user2 = accounts[4];
+    const tokenId = 2;
+    await instance.transferStar(user2, tokenId, { from: user1 });
+    assert.equal(await instance.ownerOf.call(tokenId), user2);
+  });
+
+});
 
   // Write Tests for:
 

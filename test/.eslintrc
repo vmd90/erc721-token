@@ -4,5 +4,6 @@
     "artifacts": true,
     "contract" : true,
     "it": true,
+    "web3" : true
   }
 }
